@@ -174,6 +174,43 @@ def geojson_to_kml(fc: dict, name: str, color_hex: str) -> str:
     )
 
 
+def build_diag(fc: dict) -> dict:
+    """輸出診斷資訊：欄位名稱、可能的類別欄位與其值分佈、樣本、座標格式。"""
+    feats = fc.get("features", [])
+    keys = set()
+    for f in feats[:300]:
+        keys.update((f.get("properties") or {}).keys())
+    candidates = {}
+    for field in ["空域類別名稱", "限制區", "類別", "空域分類", "空域類別",
+                  "空域名稱", "type", "category", "Type", "CATEGORY", "KIND", "kind"]:
+        vc = {}
+        for f in feats:
+            v = (f.get("properties") or {}).get(field)
+            if v is not None and str(v).strip() != "":
+                vc[str(v)] = vc.get(str(v), 0) + 1
+        if vc:
+            top = dict(sorted(vc.items(), key=lambda x: -x[1])[:25])
+            candidates[field] = {"distinct": len(vc), "top": top}
+    sample = feats[0] if feats else {}
+    geom = sample.get("geometry") or {}
+    c = geom.get("coordinates")
+    first_coord = None
+    try:
+        while isinstance(c, list) and c and isinstance(c[0], list):
+            c = c[0]
+        first_coord = c
+    except Exception:
+        pass
+    return {
+        "feature_count": len(feats),
+        "property_keys": sorted(keys),
+        "category_field_candidates": candidates,
+        "sample_properties": sample.get("properties"),
+        "sample_geometry_type": geom.get("type"),
+        "sample_first_coordinate": first_coord,
+    }
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description="同步民航局無人機空域圖資")
     ap.add_argument("--output-dir", default=str(OUTPUT_DIR))
@@ -205,6 +242,12 @@ def main() -> int:
                 geojson_to_kml(fc, layer["title"], layer["color"]),
                 encoding="utf-8",
             )
+        if layer["slug"] == "uav_restricted_airspace":
+            (out / "_diag.json").write_text(
+                json.dumps(build_diag(fc), ensure_ascii=False, indent=2),
+                encoding="utf-8",
+            )
+            print("  ✔ 已輸出 _diag.json 診斷檔", flush=True)
         manifest_layers.append({
             "slug": layer["slug"], "title": layer["title"],
             "color": layer["color"], "feature_count": n,
