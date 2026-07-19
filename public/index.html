@@ -3,7 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>台灣無人機空域圖 · 禁限航區查詢與測量</title>
+<title>台灣無人機空域查詢地圖｜禁航區・限航區・空域申請工具 - 瑞森航拍</title>
+<meta name="description" content="免費台灣無人機空域查詢工具：即時查禁航區、限航區、國家公園與商港範圍，支援測距、測面積、匯入申請範圍、空域數自動計算與 KML/GeoJSON/Shapefile 匯出。由空拍團隊瑞森航拍製作維護。">
+<meta name="keywords" content="無人機空域,禁航區,限航區,空域查詢,空域申請,民航局,UAV,空拍,Drone,瑞森航拍">
+<meta name="author" content="瑞森航拍 reasonaerial.com">
+<link rel="canonical" href="https://map.reasonaerial.com/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="台灣無人機空域查詢地圖｜禁航區・限航區・空域申請工具">
+<meta property="og:description" content="即時查詢台灣無人機禁航區、限航區與空域申請所需資料，支援測距測面積與 KML/GeoJSON/Shapefile 匯出。由瑞森航拍提供。">
+<meta property="og:url" content="https://map.reasonaerial.com/">
+<meta property="og:site_name" content="瑞森航拍">
+<meta property="og:locale" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<!-- Google Analytics 4 · 瑞森空域地圖（評估 ID：G-VMGE4EXZNG） -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-VMGE4EXZNG"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-VMGE4EXZNG');
+</script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
 <style>
@@ -206,7 +225,7 @@
 
 <div id="resultPanel" class="box"></div>
 
-<div class="banner">資料來源：交通部民用航空局（僅供參考，實際飛行以主管機關最新公告為準）· 每日自動同步 · 測量值為概估</div>
+<div class="banner">資料來源：交通部民用航空局（僅供參考，實際飛行以主管機關最新公告為準）· 每日自動同步 · 測量值為概估 · 由 <a href="https://reasonaerial.com/" target="_blank" rel="noopener" style="color:#C8973C;font-weight:700;text-decoration:none">瑞森航拍</a> 製作維護</div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
