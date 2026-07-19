@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>台灣無人機空域查詢地圖｜禁航區・限航區・空域申請工具 - 瑞森航拍</title>
-<meta name="description" content="免費台灣無人機空域查詢工具：即時查禁航區、限航區、國家公園與商港範圍，支援測距、測面積、匯入申請範圍、空域數自動計算與 KML/GeoJSON/Shapefile 匯出。由空拍團隊瑞森航拍製作維護。">
+<title>無人機空域查詢地圖｜查禁航區、限航區，輕鬆準備空域申請 - 瑞森航拍</title>
+<meta name="description" content="飛行前，先在地圖上看看這裡的空域狀況。輕鬆查詢禁航區、限航區範圍，圖資每日與民航局同步；也能測距、測面積，匯入預定範圍自動計算空域數，並匯出 KML／GeoJSON／Shapefile 方便後續申請。由台南空拍團隊瑞森航拍用心整理。">
 <meta name="keywords" content="無人機空域,禁航區,限航區,空域查詢,空域申請,民航局,UAV,空拍,Drone,瑞森航拍">
 <meta name="author" content="瑞森航拍 www.reasonaerial.com">
 <link rel="canonical" href="https://map.reasonaerial.com/">
 <meta property="og:type" content="website">
-<meta property="og:title" content="台灣無人機空域查詢地圖｜禁航區・限航區・空域申請工具">
-<meta property="og:description" content="即時查詢台灣無人機禁航區、限航區與空域申請所需資料，支援測距測面積與 KML/GeoJSON/Shapefile 匯出。由瑞森航拍提供。">
+<meta property="og:title" content="無人機空域查詢地圖｜查禁航區、限航區，輕鬆準備空域申請">
+<meta property="og:description" content="飛行前先看看這裡的空域狀況。輕鬆查詢禁航區、限航區，圖資每日與民航局同步，還能測距測面積、匯入範圍自動算空域數並匯出申請檔。由瑞森航拍用心整理。">
 <meta property="og:url" content="https://map.reasonaerial.com/">
 <meta property="og:site_name" content="瑞森航拍">
 <meta property="og:locale" content="zh_TW">
@@ -80,7 +80,7 @@
   }
   .panel h4{margin:0 0 6px;font-size:13px}
   .tabs{display:flex;gap:3px;margin-bottom:8px}
-  .tabs button{flex:1;padding:6px 0;border:1px solid #ccd;background:#f4f6fb;border-radius:7px;
+  .tabs button{flex:1;padding:6px 0;border:1px solid #ccd;background:#f4f6fb;border-radius:7px;line-height:1.2;
     cursor:pointer;font-size:12px}
   .batch-tbl{border-collapse:collapse;width:100%;font-size:11.5px}
   .batch-tbl th,.batch-tbl td{border-bottom:1px solid #eee;padding:4px 5px;text-align:left;white-space:nowrap}
@@ -156,8 +156,8 @@
     <button id="t-status" class="active" onclick="setTool('status')">查空域</button>
     <button id="t-distance" onclick="setTool('distance')">測距</button>
     <button id="t-area" onclick="setTool('area')">測面積</button>
-    <button id="t-import" onclick="setTool('import')">導入</button>
-    <button id="t-apply" onclick="setTool('apply')">申請</button>
+    <button id="t-import" onclick="setTool('import')">匯入<br>範圍</button>
+    <button id="t-apply" onclick="setTool('apply')">繪製<br>空域</button>
   </div>
   <div id="panel-common">
     <div class="inrow">
@@ -181,6 +181,7 @@
       <label class="btn" style="cursor:pointer">匯入檔案<input id="impFile" type="file" accept=".zip,.geojson,.json,.kml" style="display:none" onchange="importFromFile(event)"></label>
     </div>
     <div class="hint" style="margin:0 0 6px">檔案支援 Shapefile(壓成含 .shp/.shx/.dbf/.prj 的 zip)、GeoJSON(.json)、KML(.kml)，上限 10MB。</div>
+    <div class="btnrow"><button class="btn primary" style="width:100%" onclick="openImportReport()">📋 產出報表（範圍內空域單位＋聯絡方式）</button></div>
     <div class="btnrow"><button class="btn" onclick="copyShare()">🔗 複製分享連結</button></div>
     <div id="import-list" style="max-height:20vh;overflow:auto;margin-top:4px"></div>
   </div>
@@ -273,7 +274,7 @@ window.contactCTA=function(){
             `空域狀態：${z.length? z.map(x=>nameOf(x)+"("+catLabelOf(x)+")").join("、") : "未壓到已收錄禁/限航區"}\n\n`; });
     if(importedAreas.length || savedMarkers.length) body+="地圖連結："+shareState()+"\n";
   } else {
-    body+="（提示：可先用「測面積」在地圖圈出想拍的範圍，或到「導入」貼上座標，再按此鈕就會自動帶入座標與空域狀態）\n";
+    body+="（提示：可先用「測面積」在地圖圈出想拍的範圍，或到「匯入範圍」貼上座標，再按此鈕就會自動帶入座標與空域狀態）\n";
   }
   window.__ctaBody=body;
   const url=`mailto:${BRAND.email}?subject=${encodeURIComponent("空拍諮詢 - 拍攝範圍")}&body=${encodeURIComponent(body)}`;
@@ -355,6 +356,29 @@ function fmtArea(m2){
   if(m2<1e6)   return `${(m2/10000).toFixed(2)} 公頃`;
   return `${(m2/1e6).toFixed(3)} 平方公里`;
 }
+/* 測面積：單位切換（自動 / 平方公里 / 平方公尺 / 坪 / 分 / 甲 / 公頃） */
+let areaUnitSel="auto";
+const AREA_UNIT_DEFS=[
+  {k:"auto",label:"自動",  div:1,          dp:0},
+  {k:"m2",  label:"平方公尺",div:1,         dp:0},
+  {k:"km2", label:"平方公里",div:1e6,       dp:4},
+  {k:"ha",  label:"公頃",   div:1e4,        dp:3},
+  {k:"ping",label:"坪",     div:3.3057851,  dp:1},
+  {k:"fen", label:"分",     div:969.91735,  dp:3},
+  {k:"jia", label:"甲",     div:9699.1735,  dp:4}
+];
+function fmtNum(v,dp){ return v.toLocaleString("zh-TW",{minimumFractionDigits:dp,maximumFractionDigits:dp}); }
+function fmtAreaSel(m2){
+  if(areaUnitSel==="auto") return fmtArea(m2);
+  const d=AREA_UNIT_DEFS.find(u=>u.k===areaUnitSel)||AREA_UNIT_DEFS[1];
+  return fmtNum(m2/d.div, d.dp)+" "+d.label;
+}
+function areaUnitSelectHtml(){
+  return `<select id="areaUnit" onchange="onAreaUnit(this.value)" style="font-size:11px;padding:1px 3px;border:1px solid #ccd;border-radius:5px;margin-left:5px;vertical-align:middle">`+
+    AREA_UNIT_DEFS.map(u=>`<option value="${u.k}"${u.k===areaUnitSel?" selected":""}>${u.label}</option>`).join("")+
+    `</select>`;
+}
+window.onAreaUnit=function(v){ areaUnitSel=v; redrawMeasure(); };
 // 解析座標輸入；台灣 lat 21~26、lng 118~123，必要時自動對調
 function parseCoord(str){
   const m = String(str).trim().match(/^(-?\d+(?:\.\d+)?)\s*[,\s]\s*(-?\d+(?:\.\d+)?)$/);
@@ -630,7 +654,7 @@ function setTool(t){
   if(t==="status"){ setHint("點地圖查空域；或輸入地址／座標後按定位。"); clearMeasure(); setReadout("點擊地圖或輸入地址／座標開始。"); }
   else if(t==="distance"){ setHint("依序點地圖或輸入座標加點，計算路徑總長。點節點可刪除、可拖曳。"); closeResult(); redrawMeasure(); }
   else if(t==="area"){ setHint("依序加點圍出範圍，計算面積（至少 3 點）。點節點可刪除、可拖曳。"); closeResult(); redrawMeasure(); }
-  else if(t==="import"){ setHint("貼上申請範圍座標或匯入 KML／GeoJSON，繪成範圍後可查是否壓到禁／限航區，並可產生評估報告。"); clearMeasure(); closeResult(); setReadout(`已導入 ${importedAreas.length} 個範圍。`); }
+  else if(t==="import"){ setHint("貼上或匯入範圍(KML／GeoJSON／座標)，繪成範圍後可查壓到哪些禁／限航區，並按「產出報表」列出範圍內各空域單位的聯絡方式。"); clearMeasure(); closeResult(); setReadout(`已匯入 ${importedAreas.length} 個範圍。`); }
   else if(t==="apply"){ setHint("繪製申請多邊形（最多6點），即時顯示空域數，可暫存並匯出給民航局。"); clearMeasure(); closeResult(); setReadout("按「繪製多邊形」開始，在地圖上點出頂點。"); }
 }
 function addMeasurePoint(latlng){
@@ -663,7 +687,7 @@ function redrawMeasure(){
     if(mpts.length>=3){
       L.polygon(mpts,{color:"#00897b",weight:3,fillColor:"#26a69a",fillOpacity:0.2}).addTo(measureLayer);
       let per=0; for(let i=1;i<mpts.length;i++) per+=mpts[i-1].distanceTo(mpts[i]); per+=mpts[mpts.length-1].distanceTo(mpts[0]);
-      setReadout(`點數：${mpts.length}　面積：<b>${fmtArea(geoArea(mpts))}</b>　周長：${fmtDist(per)}`);
+      setReadout(`點數：${mpts.length}　面積：<b>${fmtAreaSel(geoArea(mpts))}</b>${areaUnitSelectHtml()}　周長：${fmtDist(per)}`);
     }else{
       if(mpts.length>=2) L.polyline(mpts,{color:"#00897b",weight:2,dashArray:"4"}).addTo(measureLayer);
       setReadout(`點數：${mpts.length}（至少 3 點才有面積）`);
@@ -789,7 +813,7 @@ function importPopup(rec){
       zones.slice(0,8).map(r=>`<div style="font-size:12px">・${nameOf(r)}（${catLabelOf(r)}）</div>`).join("")+
       (zones.length>8?`<div style="font-size:11px;color:#888">…共 ${zones.length} 個</div>`:"")
     : `<div class="status-ok" style="margin:6px 0">✔ 未壓到已收錄禁／限航區</div>`;
-  return `<h3>${rec.name||"導入範圍"}</h3>`+
+  return `<h3>${rec.name||"匯入範圍"}</h3>`+
     `<div style="font-size:12px;color:#555">頂點 ${rec.latlngs.length}　面積 ${fmtArea(A)}</div>`+zl+
     `<div class="pop-actions"><button class="btn" onclick="openGmap(${c.lat.toFixed(6)},${c.lng.toFixed(6)})">Google 地圖</button>`+
     `<button class="btn" onclick="delImport(${rec.id})">刪除</button></div>`;
@@ -805,7 +829,7 @@ function addImport(o,{fit=true}={}){
   const rec={id:o.id,name:o.name,color:o.color,latlngs:latlngs,layer:null};
   drawArea(rec); importedAreas.push(rec); renderImportList(); persistImport();
   if(fit){ try{ map.fitBounds(L.latLngBounds(latlngs).pad(0.3)); }catch(e){} }
-  setReadout(`已導入「${rec.name}」，面積 ${fmtArea(geoArea(latlngs))}`);
+  setReadout(`已匯入「${rec.name}」，面積 ${fmtArea(geoArea(latlngs))}`);
 }
 window.importFromText=function(){
   setMsg("");
@@ -893,7 +917,7 @@ function loadFromHash(){
 }
 function renderImportList(){
   const el=document.getElementById("import-list"); if(!el) return;
-  if(!importedAreas.length){ el.innerHTML=`<div class="empty" style="color:#999;padding:4px 0">尚無導入範圍。</div>`; return; }
+  if(!importedAreas.length){ el.innerHTML=`<div class="empty" style="color:#999;padding:4px 0">尚無匯入範圍。</div>`; return; }
   el.innerHTML="";
   importedAreas.forEach(r=>{
     const d=document.createElement("div"); d.className="item";
@@ -928,6 +952,88 @@ function restoreImport(){
     renderImportList();
   }catch(e){}
 }
+
+/* ===================== 匯入範圍：範圍內空域單位報表 ===================== */
+function reportRangeZones(rec){
+  // 範圍壓到的空域單位（排除行政區界，那不是聯絡單位）
+  return areaZones(rec.latlngs).filter(r=> r.groupLabel!=="行政區界");
+}
+function reportRows(){
+  return importedAreas.map(rec=>({area:rec, zones:reportRangeZones(rec)}));
+}
+function zoneReportCells(r){
+  const p=r.feature.properties||{};
+  const g=k=>{ let v=p[k]; return (v==null||String(v).trim()==="")?"":String(v).trim(); };
+  const cat=(CAT[catOf(p)]||{}).label || r.groupLabel || "";
+  const eff=[g("有效日期起"),g("有效日期迄")].filter(Boolean).join(" ~ ");
+  return { name:nameOf(r), cat,
+    org:(g("主管機關名稱")||g("主管機關")),
+    consult:(g("會商機關名稱")||g("會商機關")),
+    contact:g("聯絡方式"), eff, desc:g("空域說明") };
+}
+window.openImportReport=function(){
+  if(!importedAreas.length){ setTool("import"); setMsg("尚無匯入範圍，請先貼上座標或匯入檔案框出範圍"); return; }
+  const el=document.getElementById("resultPanel"); if(!el) return;
+  const data=reportRows();
+  const totalZones=data.reduce((s,d)=>s+d.zones.length,0);
+  let html=`<div class="rp-head"><div class="rp-title">📋 範圍內空域單位報表</div>`+
+    `<div class="rp-coord">${importedAreas.length} 個範圍 · 共壓到 ${totalZones} 個空域單位</div>`+
+    `<button class="rp-close" title="關閉" onclick="closeResult()">×</button></div>`;
+  html+=`<div style="padding:8px 12px">`;
+  data.forEach(d=>{
+    html+=`<div style="margin:8px 0 4px;font-weight:700;font-size:13px;border-left:4px solid #C8973C;padding-left:7px">${esc(d.area.name)} <span style="font-weight:400;color:#888;font-size:11px">面積 ${fmtArea(geoArea(d.area.latlngs))}</span></div>`;
+    if(!d.zones.length){ html+=`<div class="status-ok" style="margin:2px 0 6px">✔ 未壓到已收錄禁／限航區</div>`; return; }
+    d.zones.forEach(r=>{ const c=zoneReportCells(r);
+      html+=`<div style="border:1px solid #eee;border-radius:7px;padding:6px 8px;margin:0 0 6px;font-size:12px;line-height:1.65">`+
+        `<div><b>${esc(c.name)}</b> <span style="color:#c62828">${esc(c.cat)}</span></div>`+
+        (c.org?`<div>主管機關：${esc(c.org)}</div>`:"")+
+        (c.consult?`<div>會商機關：${esc(c.consult)}</div>`:"")+
+        `<div>聯絡方式：${c.contact?esc(c.contact):'<span style="color:#999">（圖資未提供，建議洽主管機關）</span>'}</div>`+
+        (c.eff?`<div>有效期間：${esc(c.eff)}</div>`:"")+
+        `</div>`;
+    });
+  });
+  html+=`</div>`;
+  html+=`<div class="rp-actions"><button class="btn" onclick="downloadImportReportHtml()">⬇ 下載報表</button>`+
+        `<button class="btn" onclick="downloadImportReportCsv()">⬇ CSV</button>`+
+        `<button class="btn primary" onclick="printImportReport()">🖨 列印</button></div>`;
+  el.innerHTML=html; el.style.display="block";
+};
+function importReportHtmlDoc(){
+  const data=reportRows();
+  let body="";
+  data.forEach(d=>{
+    body+=`<h2>${esc(d.area.name)} <small>面積 ${fmtArea(geoArea(d.area.latlngs))}</small></h2>`;
+    if(!d.zones.length){ body+=`<p class="ok">未壓到已收錄禁／限航區。</p>`; return; }
+    body+=`<table><thead><tr><th>空域名稱</th><th>類別</th><th>主管機關</th><th>會商機關</th><th>聯絡方式</th><th>有效期間</th></tr></thead><tbody>`;
+    d.zones.forEach(r=>{ const c=zoneReportCells(r);
+      body+=`<tr><td>${esc(c.name)}</td><td>${esc(c.cat)}</td><td>${esc(c.org)}</td><td>${esc(c.consult)}</td><td>${c.contact?esc(c.contact):"（未提供，洽主管機關）"}</td><td>${esc(c.eff)}</td></tr>`;
+    });
+    body+=`</tbody></table>`;
+  });
+  let ts=""; try{ ts=new Date().toLocaleString("zh-TW"); }catch(e){}
+  return `<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>無人機空域單位報表</title>`+
+    `<style>body{font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;margin:24px;color:#222}h1{font-size:20px;margin:0 0 4px}h2{font-size:15px;margin:18px 0 6px;border-left:4px solid #C8973C;padding-left:8px}small{font-weight:400;color:#888}table{border-collapse:collapse;width:100%;font-size:12px;margin-bottom:8px}th,td{border:1px solid #ccc;padding:5px 7px;text-align:left;vertical-align:top}th{background:#f4f6fb}.ok{color:#2e7d32}.foot{margin-top:22px;color:#888;font-size:11px;line-height:1.6}</style></head><body>`+
+    `<h1>無人機空域單位報表</h1><div style="color:#666;font-size:12px">產生時間：${esc(ts)}　共 ${importedAreas.length} 個範圍</div>`+
+    body+
+    `<p class="foot">資料來源：交通部民用航空局（每日同步；僅供參考，實際仍應以主管機關最新公告為準）。<br>本報表由瑞森航拍・無人機空域地圖工具產生 · map.reasonaerial.com</p></body></html>`;
+}
+window.downloadImportReportHtml=function(){ downloadText(importReportHtmlDoc(),"空域單位報表.html","text/html"); };
+function importReportCsv(){
+  const data=reportRows();
+  const rows=[["範圍","空域名稱","類別","主管機關","會商機關","聯絡方式","有效期間"]];
+  data.forEach(d=>{ if(!d.zones.length){ rows.push([d.area.name,"（未壓到禁/限航區）","","","","",""]); return; }
+    d.zones.forEach(r=>{ const c=zoneReportCells(r); rows.push([d.area.name,c.name,c.cat,c.org,c.consult,c.contact,c.eff]); }); });
+  const csv=rows.map(r=>r.map(x=>`"${String(x==null?"":x).replace(/"/g,'""')}"`).join(",")).join("\r\n");
+  return "﻿"+csv;
+}
+window.downloadImportReportCsv=function(){ downloadText(importReportCsv(),"空域單位報表.csv","text/csv"); };
+window.printImportReport=function(){
+  const w=window.open("","_blank");
+  if(!w){ setMsg("瀏覽器阻擋了列印視窗，請改用「下載報表」再列印"); return; }
+  w.document.write(importReportHtmlDoc()); w.document.close(); w.focus();
+  setTimeout(()=>{ try{ w.print(); }catch(e){} }, 400);
+};
 
 /* ===================== 法人：空域申請模組（繪製→自檢→匯出） ===================== */
 function downloadText(text, filename, type){
